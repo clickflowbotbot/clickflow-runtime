@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ],
+  "env": {
+    "KOMMO_BASE_URL": "@kommo-base-url",
+    "KOMMO_TOKEN": "@kommo-token",
+    "GITHUB_TOKEN": "@github-token",
+    "VERCEL_TOKEN": "@vercel-token"
+  }
+}
