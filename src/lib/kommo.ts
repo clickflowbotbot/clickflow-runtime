@@ -1,7 +1,5 @@
 // Kommo API Client for ClickFlow
 
-import fetch from 'node-fetch';
-
 const KOMMO_BASE_URL = process.env.KOMMO_BASE_URL || 'https://alexgrundy.kommo.com';
 const KOMMO_TOKEN = process.env.KOMMO_TOKEN;
 
@@ -14,8 +12,10 @@ export class KommoClient {
     this.token = KOMMO_TOKEN || '';
     
     if (!this.token) {
+      console.error('[Kommo] ERROR: KOMMO_TOKEN not configured');
       throw new Error('KOMMO_TOKEN not configured');
     }
+    console.log('[Kommo] Initialized with baseUrl:', this.baseUrl);
   }
 
   private async request(endpoint: string, options: any = {}) {
@@ -26,49 +26,32 @@ export class KommoClient {
       ...options.headers
     };
 
-    const response = await fetch(url, {
-      ...options,
-      headers
-    });
+    console.log(`[Kommo] Request: ${options.method || 'GET'} ${url}`);
+    
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers
+      });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Kommo API error: ${response.status} - ${error}`);
+      console.log(`[Kommo] Response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[Kommo] ERROR: ${response.status} - ${errorText}`);
+        throw new Error(`Kommo API error: ${response.status} - ${errorText}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error(`[Kommo] Request failed:`, error);
+      throw error;
     }
-
-    return response.json();
   }
 
-  // Leads
-  async getLeads(limit: number = 10) {
-    return this.request(`/api/v4/leads?limit=${limit}`);
-  }
-
-  async getLead(id: number) {
-    return this.request(`/api/v4/leads/${id}`);
-  }
-
-  async createLead(data: any) {
-    return this.request('/api/v4/leads', {
-      method: 'POST',
-      body: JSON.stringify([data])
-    });
-  }
-
-  async updateLead(id: number, data: any) {
-    return this.request(`/api/v4/leads/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data)
-    });
-  }
-
-  // Contacts
-  async getContact(id: number) {
-    return this.request(`/api/v4/contacts/${id}`);
-  }
-
-  // Notes (for logging agent actions)
   async addNote(entityType: 'leads' | 'contacts', entityId: number, text: string) {
+    console.log(`[Kommo] Adding note to ${entityType} ${entityId}: "${text}"`);
+    
     return this.request('/api/v4/notes', {
       method: 'POST',
       body: JSON.stringify([{
@@ -80,21 +63,6 @@ export class KommoClient {
         }
       }])
     });
-  }
-
-  // Custom Fields
-  async getCustomFields(entityType: 'leads' | 'contacts' | 'companies') {
-    return this.request(`/api/v4/${entityType}/custom_fields`);
-  }
-
-  // Pipeline/Statuses
-  async getPipelines() {
-    return this.request('/api/v4/pipelines');
-  }
-
-  // Account Info
-  async getAccount() {
-    return this.request('/api/v4/account');
   }
 }
 
