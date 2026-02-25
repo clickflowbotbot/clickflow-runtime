@@ -24,6 +24,9 @@ export class Dispatcher {
       case 'qa.approved':
         await this.routeToAgent(event, 'ClickFlow-Ops', 'Live');
         break;
+      case 'inbound.message':
+        await this.handleInboundMessage(event);
+        break;
       default:
         console.log(`[Dispatcher] Unhandled event type: ${event.type}`);
     }
@@ -69,6 +72,21 @@ export class Dispatcher {
     } else {
       // Route to Intake to complete spec first
       await this.routeToAgent(event, 'ClickFlow-Intake', 'Approved');
+    }
+  }
+
+  private async handleInboundMessage(event: Event): Promise<void> {
+    const conversationId = this.extractConversationId(event);
+    const existing = this.conversations.get(conversationId);
+    
+    // If conversation exists and has an owner, route to them
+    // Otherwise, route to Support as default
+    if (existing?.owner) {
+      console.log(`[Dispatcher] Routing inbound message to existing owner: ${existing.owner}`);
+      await this.triggerAgent(existing.owner, event, existing);
+    } else {
+      console.log(`[Dispatcher] Routing inbound message to ClickFlow-Support`);
+      await this.routeToAgent(event, 'ClickFlow-Support', 'Ongoing');
     }
   }
 
