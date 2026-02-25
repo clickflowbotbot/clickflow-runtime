@@ -1,0 +1,12 @@
+#!/bin/bash
+echo "Deploying ClickFlow Runtime to Vercel..."
+echo "Project: clickflow-runtime"
+echo ""
+echo "To deploy manually:"
+echo "1. Go to https://vercel.com/new"
+echo "2. Import from: clickflowbotbot/clickflow-runtime"
+echo "3. Environment variables needed:"
+echo "   - KOMMO_BASE_URL=https://alexgrundy.kommo.com"
+echo "   - KOMMO_TOKEN=***"
+echo "   - GITHUB_TOKEN=***"
+echo "   - VERCEL_TOKEN=***"
